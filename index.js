@@ -3,6 +3,7 @@ const app = express();
 const server = require("http").createServer(app);
 const io = require("socket.io").listen(server);
 const port = 5000;
+const moment = require("moment-timer")
 
 const { addUser, removeUser, getUser, getUsersInRoom } = require('./users')
 
@@ -16,14 +17,17 @@ app.get('/test', (req, res, next) => {
 
 io.on('connection', (socket) => {
 	console.log('We have a connection')
+	console.log()
+
+	let timer;
+	let started = false;
 
 	socket.on('disconnect', () => {
 		console.log(' a user is disconnected ')
 		const user = removeUser(socket.id)
 
 		if(user) {
-			io.to(user.room).emit('message', { user: 'admin', text: 'You abandoned the game' })
-			socket.broadcast.to(user.room).emit('message', { user: 'admin', text: `${user.name} has left` })
+			io.to(user.room).emit('message', { user: 'admin', text: `${user.name} has left` })
 		}
 	})
 
@@ -39,13 +43,21 @@ io.on('connection', (socket) => {
 
 		socket.join(data.room)
 
+		io.to(data.room).emit('users', { room: data.room, users: getUsersInRoom(data.room) } )
+
 		callback();
+	})
+
+	socket.on('start', (message) => {
+		console.log('started timer', message.duration, message.room)
+		io.to(message.room).emit('time', {seconds: message.duration })
 	})
 
 	socket.on('sendMessage', (message, callback) => {
 		const user = getUser(socket.id)
 		console.log('gotMessage', user)
 		io.to(user.room).emit('message', { user: user.name, text: message })
+		io.to(user.room).emit('users', { room: user.room, users: getUsersInRoom(user.room) })
 
 		callback()
 	})
