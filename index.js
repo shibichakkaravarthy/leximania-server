@@ -10,6 +10,10 @@ const router = require('./router')
 
 app.use(router)
 
+app.get('/test', (req, res, next) => {
+	res.json('Test Successful. Server Running Good')
+})
+
 io.on('connection', (socket) => {
 	console.log('We have a connection')
 
