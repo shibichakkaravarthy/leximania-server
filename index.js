@@ -26,7 +26,7 @@ io.on('connection', (socket) => {
 	let hiddenWord = '';
 	let answered = [];
 
-	const startFresh = () => {
+	const startFresh = (room) => {
 		userToAsk = getUserByIndex(userTurn)
 
 		let userlength = getUsersInRoom().length
@@ -35,7 +35,7 @@ io.on('connection', (socket) => {
 
 
 		io.to(userToAsk.id).emit('question', { word: hiddenWord })
-		socket.broadcast.to(data.room).emit('message', { user: 'admin', text: `${userToAsk.name} will give the hint to the word` })
+		socket.broadcast.to(room).emit('message', { user: 'admin', text: `${userToAsk.name} will give the hint to the word` })
 	}
 
 	socket.on('disconnect', () => {
@@ -71,7 +71,7 @@ io.on('connection', (socket) => {
 		if(test) {
 			io.to(room).emit('message', { user: 'admin', text: 'Game Starts now' })
 
-			startFresh();
+			startFresh(room);
 		}
 	})
 
@@ -94,7 +94,7 @@ io.on('connection', (socket) => {
 				started = false;
 				hiddenWord = '';
 				answered = [];
-				startFresh();
+				startFresh(user.room);
 			}
 		}
 
