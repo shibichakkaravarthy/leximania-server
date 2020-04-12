@@ -21,7 +21,22 @@ io.on('connection', (socket) => {
 	console.log()
 
 	let userTurn = 0;
+	let userToAsk = {};
 	let started = false;
+	let hiddenWord = '';
+	let answered = [];
+
+	const startFresh = () => {
+		userToAsk = getUserByIndex(userTurn)
+
+		let userlength = getUsersInRoom().length
+		let randomNumber = Math.floor(Math.random() * (words.length - 1) + 1)
+		hiddenWord = words[randomNumber - 1]
+
+
+		io.to(userToAsk.id).emit('question', { word: hiddenWord })
+		socket.broadcast.to(data.room).emit('message', { user: 'admin', text: `${userToAsk.name} will give the hint to the word` })
+	}
 
 	socket.on('disconnect', () => {
 		console.log(' a user is disconnected ')
@@ -55,13 +70,8 @@ io.on('connection', (socket) => {
 		console.log('isEveryoneReady', test)
 		if(test) {
 			io.to(room).emit('message', { user: 'admin', text: 'Game Starts now' })
-			let userToAsk = getUserByIndex(userTurn)
 
-			let userlength = getUsersInRoom().length
-			let randomNumber = Math.floor(Math.random() * (words.length - 1) + 1)
-
-			io.to(userToAsk.id).emit('question', { word: words[randomNumber - 1] })
-			socket.broadcast.to(data.room).emit('message', { user: 'admin', text: `${userToAsk.name} will give the hint to the word` })
+			startFresh();
 		}
 	})
 
@@ -73,7 +83,24 @@ io.on('connection', (socket) => {
 	socket.on('sendMessage', (message, callback) => {
 		const user = getUser(socket.id)
 		console.log('gotMessage', user)
-		io.to(user.room).emit('message', { user: user.name, text: message })
+		if(message == hiddenWord) {
+			io.to(user.room).emit('message', { user: 'admin', text: `${user.name} has guessed the word correct`, type: 'success' })
+			setScore(socket.id, 200)
+			answered.push(socket.id)
+
+			if(answered.length == getUsersInRoom(user.room)) {
+				userTurn = 0;
+				userToAsk = {};
+				started = false;
+				hiddenWord = '';
+				answered = [];
+				startFresh();
+			}
+		}
+
+		else {
+			io.to(user.room).emit('message', { user: user.name, text: message })
+		}
 		io.to(user.room).emit('users', { room: user.room, users: getUsersInRoom(user.room) })
 
 		callback()
