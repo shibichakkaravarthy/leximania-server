@@ -61,6 +61,7 @@ io.on('connection', (socket) => {
 			let randomNumber = Math.floor(Math.random() * (words.length - 1) + 1)
 
 			io.to(userToAsk.id).emit('question', { word: words[randomNumber - 1] })
+			socket.broadcast.to(data.room).emit('message', { user: 'admin', text: `${userToAsk.name} will give the hint to the word` })
 		}
 	})
 
