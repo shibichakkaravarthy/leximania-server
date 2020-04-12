@@ -1,6 +1,6 @@
 const users = [];
 
-const addUser = ({ id, name, room }) => {
+const addUser = ({ id, name, room, ready, score }) => {
 	name = name.trim().toLowerCase();
 	room = room.trim().toLowerCase();
 
@@ -10,9 +10,32 @@ const addUser = ({ id, name, room }) => {
 		return { error: 'Username Already Exists' }
 	}
 
-	users.push({ name, room, id })
+	users.push({ name, room, id, ready, score })
 
-	return { name, room, id }
+	return { name, room, id, ready, score }
+}
+
+const getUserByIndex = (index) => {
+	return users[index]
+}
+
+const setReady = (id) => {
+	const index = users.findIndex(user => user.id === id)
+	users[index].ready = !users[index].ready
+}
+
+const isEveryoneReady = () => {
+	const isReady = users.every(user => {
+		return user.ready
+	})
+
+	return isReady;
+}
+
+const setScore = (id, points) => {
+	const index = users.findIndex(user => user.id === id)
+
+	users[index].score = users[index].score + points
 }
 
 const removeUser = (id) =>{
@@ -29,4 +52,4 @@ const getUsersInRoom = (room) => {
 	return users.filter(user => user.room === room)
 }
 
-module.exports = { addUser, removeUser, getUser, getUsersInRoom }
+module.exports = { addUser, removeUser, getUser, getUsersInRoom, setReady, setScore, isEveryoneReady, getUserByIndex }

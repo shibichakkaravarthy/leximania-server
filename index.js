@@ -5,7 +5,8 @@ const io = require("socket.io").listen(server);
 const port = 5000;
 const moment = require("moment-timer")
 
-const { addUser, removeUser, getUser, getUsersInRoom } = require('./users')
+const words = require('./words')
+const { addUser, removeUser, getUser, getUsersInRoom, setReady, setScore, isEveryoneReady, getUserByIndex } = require('./users')
 
 const router = require('./router')
 
@@ -19,7 +20,7 @@ io.on('connection', (socket) => {
 	console.log('We have a connection')
 	console.log()
 
-	let timer;
+	let userTurn = 0;
 	let started = false;
 
 	socket.on('disconnect', () => {
@@ -32,13 +33,13 @@ io.on('connection', (socket) => {
 	})
 
 	socket.on('join', ({ name, room }, callback) => {
-		const data = addUser({ id: socket.id, name, room })
+		const data = addUser({ id: socket.id, name, room, ready: false, score: 0 })
 		console.log('data', data)
 		if(data.error) {
 			return callback(data)
 		}
 
-		socket.emit('message', { user: 'admin', text: `Hello ${data.name}, Welcome to Word Builder! ` })
+		socket.emit('message', { user: 'admin', text: `Hello ${data.name}, Welcome to Word Builder! The game will start once everyone is Ready ` })
 		socket.broadcast.to(data.room).emit('message', { user: 'admin', text: `${data.name} has joined the Game` })
 
 		socket.join(data.room)
@@ -46,6 +47,21 @@ io.on('connection', (socket) => {
 		io.to(data.room).emit('users', { room: data.room, users: getUsersInRoom(data.room) } )
 
 		callback();
+	})
+
+	socket.on('ready', ({room}, callback) => {
+		setReady(socket.id)
+		let test = isEveryoneReady()
+		console.log('isEveryoneReady', test)
+		if(test) {
+			io.to(room).emit('message', { user: 'admin', text: 'Game Starts now' })
+			let userToAsk = getUserByIndex(userTurn)
+
+			let userlength = getUsersInRoom().length
+			let randomNumber = Math.floor(Math.random() * (words.length - 1) + 1)
+
+			io.to(userToAsk.id).emit('question', { word: words[randomNumber - 1] })
+		}
 	})
 
 	socket.on('start', (message) => {
