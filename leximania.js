@@ -49,7 +49,6 @@ io.on('connection', (socket) => {
 
 	socket.on('join', ({ name, room }, callback) => {
 		const data = addUser({ id: socket.id, name, room, ready: false, score: 0 })
-		console.log('data', data)
 		if(data.error) {
 			return callback(data)
 		}
@@ -67,7 +66,6 @@ io.on('connection', (socket) => {
 	socket.on('ready', ({room}, callback) => {
 		setReady(socket.id)
 		let test = isEveryoneReady()
-		console.log('isEveryoneReady', test)
 		if(test) {
 			io.to(room).emit('message', { user: 'admin', text: 'Game Starts now' })
 
@@ -82,13 +80,13 @@ io.on('connection', (socket) => {
 
 	socket.on('sendMessage', (message, callback) => {
 		const user = getUser(socket.id)
-		console.log('gotMessage', user)
+		console.log('gotAnswer', message, hidden word)
 		if(message == hiddenWord) {
 			io.to(user.room).emit('message', { user: 'admin', text: `${user.name} has guessed the word correct`, type: 'success' })
 			setScore(socket.id, 200)
 			answered.push(socket.id)
 
-			if(answered.length == getUsersInRoom(user.room)) {
+			if(answered.length == getUsersInRoom(user.room).length - 1) {
 				userTurn = 0;
 				userToAsk = {};
 				started = false;
