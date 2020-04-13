@@ -80,7 +80,7 @@ io.on('connection', (socket) => {
 
 	socket.on('sendMessage', (message, callback) => {
 		const user = getUser(socket.id)
-		console.log('gotAnswer', message, hidden word)
+		console.log('gotAnswer', message, hiddenWord)
 		if(message == hiddenWord) {
 			io.to(user.room).emit('message', { user: 'admin', text: `${user.name} has guessed the word correct`, type: 'success' })
 			setScore(socket.id, 200)
