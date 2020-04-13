@@ -20,8 +20,8 @@ const resetGameData = (roomName) => {
 	rooms[index] = { ...rooms[index], userToAsk: {}, hiddenWord: '', answered: [] }
 }
 
-const setField = (room, {field, value}) => {
-	let roomIndex = rooms.findIndex(room => room.name === room)
+const setField = (roomName, {field, value}) => {
+	let roomIndex = rooms.findIndex(room => room.name === roomName)
 
 	rooms[roomIndex][field] = value
 }
@@ -38,4 +38,23 @@ const pushAnswered = (roomName, socketId) => {
 	room[index].aswered.push(socketId)
 }
 
-module.exports = { upsertRoom, setField, getRoom, pushAnswered, resetGameData }
+const everyoneAnswered = (roomName) => {
+	let room = rooms.find(room => room.name === roomName)
+
+	if(room.aswered.length === room.joined.length - 1) {
+		resetGameData();
+		if(room.userTurn >= room.joined.length - 1) {
+			setField(room.name, {field: 'userTurn', value: 0})
+		}
+
+		else {
+			setField(room.name, {field: 'userTurn', value: room.userTurn})
+		}
+		return true
+	}
+
+	return false
+
+}
+
+module.exports = { upsertRoom, setField, getRoom, pushAnswered, resetGameData, everyoneAnswered }
