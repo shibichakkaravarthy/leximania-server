@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon leximania.js"
+    "start": "nodemon leximania"
   },
   "keywords": [],
   "author": "",
@@ -20,3 +20,5 @@
   },
   "devDependencies": {
     "nodemon": "^2.0.3"
+  }
+}

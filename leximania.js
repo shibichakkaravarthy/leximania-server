@@ -7,6 +7,7 @@ const moment = require("moment-timer")
 
 const words = require('./words')
 const { addUser, removeUser, getUser, getUsersInRoom, setReady, setScore, isEveryoneReady, getUserByIndex } = require('./users')
+const { upsertRoom, setField, getRoom, pushAnswered } = require('./rooms')
 
 const router = require('./router')
 
@@ -23,15 +24,18 @@ io.on('connection', (socket) => {
 	let userTurn = 0;
 	let userToAsk = {};
 	let started = false;
-	let hiddenWord = '';
 	let answered = [];
 
 	const startFresh = (room) => {
-		userToAsk = getUserByIndex(userTurn)
+		let roomData = getRoom(room)
+		userToAsk = getUserByIndex(roomData.userTurn)
+		setField(room, { field: 'userToAsk', value: userToAsk })
+
 
 		let userlength = getUsersInRoom().length
 		let randomNumber = Math.floor(Math.random() * (words.length - 1) + 1)
-		hiddenWord = words[randomNumber - 1]
+		setField(room, {field: 'hiddenWord', value: words[randomNumber - 1]})
+		// hiddenWord = words[randomNumber - 1]
 
 
 		io.to(userToAsk.id).emit('question', { word: hiddenWord })
@@ -49,6 +53,8 @@ io.on('connection', (socket) => {
 
 	socket.on('join', ({ name, room }, callback) => {
 		const data = addUser({ id: socket.id, name, room, ready: false, score: 0 })
+		upsertRoom(room, socket.id)
+
 		if(data.error) {
 			return callback(data)
 		}
@@ -67,6 +73,7 @@ io.on('connection', (socket) => {
 		setReady(socket.id)
 		let test = isEveryoneReady()
 		if(test) {
+			setField(room, { field: 'started', value: true })
 			io.to(room).emit('message', { user: 'admin', text: 'Game Starts now' })
 
 			startFresh(room);
@@ -80,12 +87,13 @@ io.on('connection', (socket) => {
 
 	socket.on('sendMessage', (message, callback) => {
 		const user = getUser(socket.id)
+		const hiddenWord = getRoom(user.room)
 		console.log('gotAnswer from user', message)
 		console.log('hiddenWord', hiddenWord)
 		if(message == hiddenWord) {
 			io.to(user.room).emit('message', { user: 'admin', text: `${user.name} has guessed the word correct`, type: 'success' })
 			setScore(socket.id, 200)
-			answered.push(socket.id)
+			pushAnswered(user.room, socket.id)
 
 			if(answered.length == getUsersInRoom(user.room).length - 1) {
 				userTurn = 0;
