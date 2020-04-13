@@ -34,8 +34,8 @@ io.on('connection', (socket) => {
 
 		let userlength = getUsersInRoom().length
 		let randomNumber = Math.floor(Math.random() * (words.length - 1) + 1)
-		setField(room, {field: 'hiddenWord', value: words[randomNumber - 1]})
-		// hiddenWord = words[randomNumber - 1]
+		let hiddenWord = words[randomNumber - 1]
+		setField(room, {field: 'hiddenWord', value: hiddenWord})
 
 
 		io.to(userToAsk.id).emit('question', { word: hiddenWord })
@@ -73,6 +73,7 @@ io.on('connection', (socket) => {
 		setReady(socket.id)
 		let test = isEveryoneReady()
 		if(test) {
+			console.log('room name from 76', room)
 			setField(room, { field: 'started', value: true })
 			io.to(room).emit('message', { user: 'admin', text: 'Game Starts now' })
 
@@ -87,7 +88,7 @@ io.on('connection', (socket) => {
 
 	socket.on('sendMessage', (message, callback) => {
 		const user = getUser(socket.id)
-		const hiddenWord = getRoom(user.room)
+		const hiddenWord = getRoom(user.room).hiddenWord
 		console.log('gotAnswer from user', message)
 		console.log('hiddenWord', hiddenWord)
 		if(message == hiddenWord) {

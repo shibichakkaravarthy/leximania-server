@@ -1,17 +1,19 @@
 const rooms = []
 
 const upsertRoom = (roomName, socketId) => {
-	const roomIndex = rooms.findIndex(room => roomName === room.name)
-
+	const roomIndex = rooms.findIndex(room => roomName.toLowerCase() === room.name.toLowerCase())
+	console.log('from upsert', roomIndex)
 	if(roomIndex < 0) {
 		let joined = []
 		joined.push(socketId)
-		rooms.push({ name: roomName, userTurn: 0, userToAsk: {}, started: false, hiddenWord: '', answered: [], joined })
+		rooms.push({ name: roomName.toLowerCase(), userTurn: 0, userToAsk: {}, started: false, hiddenWord: '', answered: [], joined })
 	}
 
 	else {
 		rooms[roomIndex].joined.push(socketId)
 	}
+
+	console.log('after upsert', rooms)
 }
 
 const resetGameData = (roomName) => {
@@ -20,9 +22,9 @@ const resetGameData = (roomName) => {
 	rooms[index] = { ...rooms[index], userToAsk: {}, hiddenWord: '', answered: [] }
 }
 
-const setField = (room, {field, value}) => {
-	let roomIndex = rooms.findIndex(room => room.name === room)
-
+const setField = (roomName, {field, value}) => {
+	let roomIndex = rooms.findIndex(room => room.name === roomName)
+	console.log('from room manager', roomIndex, rooms, roomName)
 	rooms[roomIndex][field] = value
 }
 
@@ -35,7 +37,7 @@ const getRoom = (roomName) => {
 const pushAnswered = (roomName, socketId) => {
 	let index = rooms.findIndex(room => room.name === roomName )
 
-	room[index].aswered.push(socketId)
+	rooms[index].aswered.push(socketId)
 }
 
 module.exports = { upsertRoom, setField, getRoom, pushAnswered, resetGameData }

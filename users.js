@@ -21,6 +21,7 @@ const getUserByIndex = (index) => {
 
 const setReady = (id) => {
 	const index = users.findIndex(user => user.id === id)
+	console.log('from user manager', users[index], users)
 	users[index].ready = !users[index].ready
 }
 
