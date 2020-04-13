@@ -24,11 +24,7 @@ const resetGameData = (roomName) => {
 
 const setField = (roomName, {field, value}) => {
 	let roomIndex = rooms.findIndex(room => room.name === roomName)
-<<<<<<< HEAD
-
-=======
 	console.log('from room manager', roomIndex, rooms, roomName)
->>>>>>> 5a4a08e57c41014aecefeec0cef14a7d7ea42ae6
 	rooms[roomIndex][field] = value
 }
 
