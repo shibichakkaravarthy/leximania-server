@@ -6,8 +6,8 @@ const port = 5000;
 const moment = require("moment-timer")
 
 const words = require('./words')
-const { addUser, removeUser, getUser, getUsersInRoom, setReady, setScore, isEveryoneReady, getUserByIndex, everyoneAnswered } = require('./users')
-const { upsertRoom, setField, getRoom, pushAnswered } = require('./rooms')
+const { addUser, removeUser, getUser, getUsersInRoom, setReady, setScore, isEveryoneReady, getUserByIndex } = require('./users')
+const { upsertRoom, setField, getRoom, pushAnswered, everyoneAnswered } = require('./rooms')
 
 const router = require('./router')
 
@@ -95,6 +95,7 @@ io.on('connection', (socket) => {
 			io.to(user.room).emit('message', { user: 'admin', text: `${user.name} has guessed the word correct`, type: 'success' })
 			setScore(socket.id, 200)
 			pushAnswered(user.room, socket.id)
+			console.log('everyoneAnswered', everyoneAnswered)
 			if(everyoneAnswered(user.room)) {
 				startFresh(user.room)
 			}
