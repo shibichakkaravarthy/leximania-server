@@ -43,7 +43,7 @@ const everyoneAnswered = (roomName) => {
 	let room = rooms.find(room => room.name === roomName)
 	console.log('everyone answered', room, roomName)
 	if(room.answered.length >= room.joined.length - 1) {
-		resetGameData();
+		resetGameData(roomName);
 		if(room.userTurn >= room.joined.length - 1) {
 			setField(room.name, {field: 'userTurn', value: 0})
 		}

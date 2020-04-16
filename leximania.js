@@ -18,9 +18,6 @@ app.get('/test', (req, res, next) => {
 })
 
 io.on('connection', (socket) => {
-	console.log('We have a connection')
-	console.log()
-
 	let userTurn = 0;
 	let userToAsk = {};
 	let started = false;
@@ -43,7 +40,6 @@ io.on('connection', (socket) => {
 	}
 
 	socket.on('disconnect', () => {
-		console.log(' a user is disconnected ')
 		const user = removeUser(socket.id)
 
 		if(user) {
@@ -73,16 +69,13 @@ io.on('connection', (socket) => {
 		setReady(socket.id)
 		let test = isEveryoneReady()
 		if(test) {
-			console.log('room name from 76', room)
 			setField(room, { field: 'started', value: true })
 			io.to(room).emit('message', { user: 'admin', text: 'Game Starts now' })
-
 			startFresh(room);
 		}
 	})
 
 	socket.on('start', (message) => {
-		console.log('started timer', message.duration, message.room)
 		io.to(message.room).emit('time', {seconds: message.duration })
 	})
 
@@ -94,6 +87,7 @@ io.on('connection', (socket) => {
 		if(message == hiddenWord) {
 			io.to(user.room).emit('message', { user: 'admin', text: `${user.name} has guessed the word correct`, type: 'success' })
 			setScore(socket.id, 200)
+			io.to(socket.id).emit('stopTimer')
 			pushAnswered(user.room, socket.id)
 			console.log('everyoneAnswered', everyoneAnswered)
 			if(everyoneAnswered(user.room)) {
