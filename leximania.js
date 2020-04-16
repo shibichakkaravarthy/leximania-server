@@ -91,6 +91,9 @@ io.on('connection', (socket) => {
 			pushAnswered(user.room, socket.id)
 			console.log('everyoneAnswered', everyoneAnswered)
 			if(everyoneAnswered(user.room)) {
+				let roomData = getRoom(room)
+				setScore(userToAsk.id, 200)
+				io.to(userToAsk.id).emit('stopTimer')
 				startFresh(user.room)
 			}
 		}
